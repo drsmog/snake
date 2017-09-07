@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <script src="http://cdn.peerjs.com/0.3/peer.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
 </head>
 
 <body>
@@ -24,64 +24,48 @@
     </canvas>
 
     <script>
-        var myid = Math.random().toString(36).substring(7);
-        var conn;
-        var peer = new Peer(myid, {
-            host: '172.17.184.16',
-            port: 9000
-        });
+        var gamer = prompt('your game nick name pls');
+        var enemies = [];
+       
+        //init game
+        var canvas = document.getElementById('sgame');
+        var ctx = canvas.getContext('2d');
 
-        function connectToPeer() {
-            var peerid = $('#peerid').val();
-            conn = peer.connect(peerid);
-            // Receive messages
-            conn.on('open', function () {
-                console.log('connectToPeer open event')
-                conn.on('data', function (data) {
-                    console.log('Received', data);
-                });
+        var socket = io('http://172.17.184.13:8877');
+        socket.on('SNAKE_MOVE', function (data) {
+            var enemyObject;
+            var enemySnake;
+            enemies.forEach(function (enemy) {
+                if (enemy.gamer == data.gamer) {
+                    enemy.snake.forEach(function (item) {
+                        ctx.clearRect(item.x, item.y, snakeSize, snakeSize);
+                    });
+                    enemyObject = enemy;
+                    enemy.snake=JSON.parse(data.snake);
+                    enemySnake = enemy.snake;
+                }
             });
 
-            // Send messages
-            //conn.send('Hello!');
-            // conn.on('open', function () {
+            if (!enemyObject) { //cant find
+                enemyObject = { gamer: data.gamer, snake: JSON.parse(data.snake) };
+                enemies.push(enemyObject);
+                enemySnake=enemyObject.snake;
+            }
 
-            // });
-
-        }
-
-        peer.on('connection', function (c) {
-            conn = c;
-            console.log('connection is esteblished');
+            console.log(data);
 
 
-            conn.on('data', function (data) {
-                console.log('Received', data);
-            });
+            
+            for (var i = 0; i < enemySnake.length; i++) {
+                var item = enemySnake[i];
+                ctx.fillStyle = 'green';
+                if (i == enemySnake.length - 1) {
+                    ctx.fillStyle = 'red';
+                }
+                ctx.fillRect(item.x, item.y, snakeSize, snakeSize);
 
+            }
         });
-
-        // function connect(c) {
-        //     console.log(c);
-        //     conn = c;
-        //     c.on('data', function (data) {
-        //         console.log(data);
-        //     });
-        // }
-
-        peer.on('open', function (id) {
-            $('#myid').text('my id is : ' + id);
-        });
-
-
-
-        function sendhw() {
-            console.log(conn);
-            conn.send('sexy madafaka');
-        }
-
-
-
         var snake = [{
             x: 10,
             y: 10
@@ -102,9 +86,7 @@
         var snakeSize = 25;
         var direction = 'right';
 
-        //init game
-        var canvas = document.getElementById('sgame');
-        var ctx = canvas.getContext('2d');
+
 
 
 
@@ -171,13 +153,14 @@
             snake.splice(0, 1);
             snake.push(newHead);
             drawSnake(ctx);
+            socket.emit('SNAKE_MOVE', { gamer: gamer, snake: JSON.stringify(snake) });
 
 
 
         }
 
         function drawSnake(ctx) {
-            //ctx.fillStyle = 'green';
+
             for (var i = 0; i < snake.length; i++) {
                 var item = snake[i];
                 ctx.fillStyle = 'green';
@@ -187,9 +170,7 @@
                 ctx.fillRect(item.x, item.y, snakeSize, snakeSize);
 
             }
-            // snake.forEach(function (item) {
-            //     ctx.fillRect(item.x, item.y, snakeSize, snakeSize);
-            // });
+
 
         }
         setInterval(gameLoop, 500);
