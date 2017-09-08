@@ -52,7 +52,7 @@
 
         $('#you').text(`you:${gamer}`).css('color',snakeColor);
 
-        var socket = io('http://172.17.184.35:8877');
+        var socket = io('http://172.17.184.23:8877');
         socket.on('SNAKE_MOVE', function (data) {
             var enemyObject;
             var enemySnake;
@@ -77,7 +77,19 @@
             }
             $('#players').empty();
             enemies.forEach(function (e) {
-                var enemyGamer = $(`<p>${e.gamer} : |||||||||||</p>`).css('color', e.snakeColor);
+                var colorCube = $('<span></span>').css({
+                  'background-color': e.snakeColor,
+                  'width': snakeSize,
+                  'height': snakeSize,
+                  'position': 'fixed',
+                  'display': 'inline-block'
+                });
+                var gamerText = $(`<span>${e.gamer} : &nbsp</span>`).css({
+                  'display': 'inline-block',
+                  'vertical-align': 'middle',
+                  'height': snakeSize
+                });
+                var enemyGamer = $(`<p></p>`).append(gamerText).append(colorCube);
                 $('#players').append(enemyGamer);
             });
 
