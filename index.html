@@ -41,7 +41,7 @@
         var snakeSize = 25;
         var direction = 'right';
         var snakeColor = '#' + Math.random().toString(16).substr(-6);
-        
+
 
         var gamer = prompt('your game nick name pls');
         var enemies = [];
@@ -158,10 +158,10 @@
                     break;
             }
 
-            if (newHead.x > 800) {
+            if (newHead.x >= 800) {
                 newHead.x = newHead.x - 800;
             }
-            if (newHead.y > 600) {
+            if (newHead.y >= 600) {
                 newHead.y = newHead.y - 600;
             }
             if (newHead.x < 0) {
