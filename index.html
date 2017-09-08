@@ -11,27 +11,48 @@
 
 <body>
     <div>
-        <label id="myid">myid is: </label>
+        <label id="you">you: </label>
 
     </div>
-    <div>
-        <label>peer id is: </label>
-        <input type="text" id="peerid">
-        <button onclick="connectToPeer()">connect</button>
-        <button onclick="sendhw()">hello w</button>
+    <div id="players">
+
     </div>
     <canvas id="sgame" width="800" height="600" style="background-color:aliceblue;border: solid black">
     </canvas>
 
     <script>
+        var snake = [{
+            x: 0,
+            y: 0
+        }, {
+            x: 25,
+            y: 0
+        }, {
+            x: 50,
+            y: 0
+        }, {
+            x: 75,
+            y: 0
+        }, {
+            x: 100,
+            y: 0
+        }];
+
+        var snakeSize = 25;
+        var direction = 'right';
+        var snakeColor = '#' + Math.random().toString(16).substr(-6);
+        
+
         var gamer = prompt('your game nick name pls');
         var enemies = [];
-       
+
         //init game
         var canvas = document.getElementById('sgame');
         var ctx = canvas.getContext('2d');
 
-        var socket = io('http://172.17.184.13:8877');
+        $('#you').text(`you:${gamer}`).css('color',snakeColor);
+
+        var socket = io('http://172.17.184.35:8877');
         socket.on('SNAKE_MOVE', function (data) {
             var enemyObject;
             var enemySnake;
@@ -40,25 +61,32 @@
                     enemy.snake.forEach(function (item) {
                         ctx.clearRect(item.x, item.y, snakeSize, snakeSize);
                     });
+                    enemy.snakeColor = data.snakeColor;
                     enemyObject = enemy;
-                    enemy.snake=JSON.parse(data.snake);
+                    enemy.snake = JSON.parse(data.snake);
                     enemySnake = enemy.snake;
+
                 }
             });
 
-            if (!enemyObject) { //cant find
-                enemyObject = { gamer: data.gamer, snake: JSON.parse(data.snake) };
+            if (!enemyObject) { //cant find add new player
+                enemyObject = { gamer: data.gamer, snake: JSON.parse(data.snake), snakeColor: data.snakeColor };
                 enemies.push(enemyObject);
-                enemySnake=enemyObject.snake;
+                enemySnake = enemyObject.snake;
+
             }
+            $('#players').empty();
+            enemies.forEach(function (e) {
+                var enemyGamer = $(`<p>${e.gamer} : |||||||||||</p>`).css('color', e.snakeColor);
+                $('#players').append(enemyGamer);
+            });
 
             console.log(data);
 
 
-            
+            ctx.fillStyle = enemyObject.snakeColor;
             for (var i = 0; i < enemySnake.length; i++) {
                 var item = enemySnake[i];
-                ctx.fillStyle = 'green';
                 if (i == enemySnake.length - 1) {
                     ctx.fillStyle = 'red';
                 }
@@ -66,25 +94,6 @@
 
             }
         });
-        var snake = [{
-            x: 10,
-            y: 10
-        }, {
-            x: 35,
-            y: 10
-        }, {
-            x: 60,
-            y: 10
-        }, {
-            x: 85,
-            y: 10
-        }, {
-            x: 110,
-            y: 10
-        }];
-
-        var snakeSize = 25;
-        var direction = 'right';
 
 
 
@@ -149,21 +158,32 @@
                     break;
             }
 
+            if (newHead.x > 800) {
+                newHead.x = newHead.x - 800;
+            }
+            if (newHead.y > 600) {
+                newHead.y = newHead.y - 600;
+            }
+            if (newHead.x < 0) {
+                newHead.x = newHead.x + 800;
+            }
+            if (newHead.y < 0) {
+                newHead.y = newHead.y + 600;
+            }
             ctx.clearRect(tail.x, tail.y, snakeSize, snakeSize);
             snake.splice(0, 1);
             snake.push(newHead);
             drawSnake(ctx);
-            socket.emit('SNAKE_MOVE', { gamer: gamer, snake: JSON.stringify(snake) });
+            socket.emit('SNAKE_MOVE', { gamer: gamer, snake: JSON.stringify(snake), snakeColor: snakeColor });
 
 
 
         }
 
         function drawSnake(ctx) {
-
+            ctx.fillStyle = snakeColor;
             for (var i = 0; i < snake.length; i++) {
                 var item = snake[i];
-                ctx.fillStyle = 'green';
                 if (i == snake.length - 1) {
                     ctx.fillStyle = 'red';
                 }

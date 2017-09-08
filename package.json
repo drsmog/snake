@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "dependencies": {},
+  "dependencies": {
+    "socket.io": "2.0.3"
+  },
   "devDependencies": {
     "peer": "0.2.8"
   },
