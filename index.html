@@ -54,7 +54,7 @@
         var youText = $(`<span>you:${gamer} &nbsp</span>`).css(gamerTextCss());
         $('#you').text('').append(youText).append(colorCube(snakeColor));
 
-        var socket = io('http://172.17.184.35:8877');
+        var socket = io(window.location.href);
         socket.on('SNAKE_MOVE', function (data) {
             var enemyObject;
             var enemySnake;
