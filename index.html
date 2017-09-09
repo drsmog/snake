@@ -7,6 +7,7 @@
     <title>Document</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
+    <script src="directions.js"></script>
 </head>
 
 <body>
@@ -39,7 +40,7 @@
         }];
 
         var snakeSize = 25;
-        var direction = 'right';
+        var direction = directions.RIGHT;
         var snakeColor = '#' + Math.random().toString(16).substr(-6);
 
 
@@ -112,31 +113,8 @@
 
             };
             if (data.gamer === gamer) {
-                var newHead = { x: 0, y: 0 };
                 var head = snake[snake.length - 1];
-                switch (direction) {
-                    case 'right':
-                        newHead.x = head.x + snakeSize;
-                        newHead.y = head.y;
-                        break;
-                    case 'down':
-                        newHead.x = head.x;
-                        newHead.y = head.y + snakeSize;
-
-                        break;
-                    case 'left':
-                        newHead.x = head.x - snakeSize;
-                        newHead.y = head.y;
-
-                        break;
-                    case 'up':
-                        newHead.x = head.x;
-                        newHead.y = head.y - snakeSize;
-                        break;
-
-                    default:
-                        break;
-                }
+                var newHead = direction.placeNewHead(head, snakeSize);
                 snake.push(newHead);
             }
             else {
@@ -155,62 +133,16 @@
 
 
         document.addEventListener("keydown", function (event) {
+            var chosen = chooseDirection(event.keyCode);
 
-            switch (event.keyCode) {
-                case 37:
-                    //left
-                    direction = 'left';
-                    break;
-                case 38:
-                    //up
-                    direction = 'up';
-                    break;
-                case 39:
-                    //right
-                    direction = 'right';
-                    break;
-                case 40:
-                    //down
-                    direction = 'down';
-                    break;
-
-                default:
-                    break;
-            }
+            if (chosen) direction = chosen;
         });
 
         //game loop
         function gameLoop() {
             var head = snake[snake.length - 1];
             var tail = snake[0];
-            var newHead = {
-                x: 0,
-                y: 0
-            };
-
-            switch (direction) {
-                case 'right':
-                    newHead.x = head.x + snakeSize;
-                    newHead.y = head.y;
-                    break;
-                case 'down':
-                    newHead.x = head.x;
-                    newHead.y = head.y + snakeSize;
-
-                    break;
-                case 'left':
-                    newHead.x = head.x - snakeSize;
-                    newHead.y = head.y;
-
-                    break;
-                case 'up':
-                    newHead.x = head.x;
-                    newHead.y = head.y - snakeSize;
-                    break;
-
-                default:
-                    break;
-            }
+            var newHead = direction.placeNewHead(head, snakeSize);
 
             if (newHead.x >= 800) {
                 newHead.x = newHead.x - 800;
@@ -310,7 +242,7 @@
             }];
 
 
-            direction = 'right';
+            direction = directions.RIGHT;
             snakeColor = '#' + Math.random().toString(16).substr(-6);
         };
 
