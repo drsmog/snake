@@ -27,5 +27,9 @@ io.on('connection', function (socket) {
     console.log(data);
     socket.broadcast.emit('SNAKE_MOVE', data);
   });
+  socket.on('GENERATE_FOOD',function (data) {
+    console.log(data);
+    socket.broadcast.emit('GENERATE_FOOD',data);
+  });
 });
     

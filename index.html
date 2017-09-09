@@ -50,7 +50,7 @@
         var canvas = document.getElementById('sgame');
         var ctx = canvas.getContext('2d');
 
-        $('#you').text(`you:${gamer}`).css('color',snakeColor);
+        $('#you').text(`you:${gamer}`).css('color', snakeColor);
 
         var socket = io('http://172.17.184.35:8877');
         socket.on('SNAKE_MOVE', function (data) {
@@ -93,6 +93,10 @@
                 ctx.fillRect(item.x, item.y, snakeSize, snakeSize);
 
             }
+        });
+        socket.on('GENERATE_FOOD',function (data) {
+            ctx.fillStyle = 'green';
+           ctx.fillRect(data.foodx,data.foody,snakeSize,snakeSize); 
         });
 
 
@@ -193,7 +197,23 @@
 
 
         }
+
+        function generateFood() {
+            var foodx = Math.floor((Math.random() * 1000) % 800);
+            var foody = Math.floor((Math.random() * 1000) % 600);
+
+            if (foodx % 25 != 0) {
+                foodx = foodx + 25 - foodx % 25;
+            }
+            if (foody % 25 != 0) {
+                foody = foody + 25 - foody % 25;
+            }
+            ctx.fillRect(foodx, foody, snakeSize, snakeSize);
+            socket.emit('GENERATE_FOOD', { foodx: foodx, foody: foody });
+        }
+
         setInterval(gameLoop, 100);
+        setInterval(generateFood, 5000);
         //alert('xeii');
     </script>
 
