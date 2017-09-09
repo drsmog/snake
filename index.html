@@ -45,6 +45,7 @@
 
         var gamer = prompt('your game nick name pls');
         var enemies = [];
+        var foods = [];
 
         //init game
         var canvas = document.getElementById('sgame');
@@ -53,7 +54,7 @@
         var youText = $(`<span>you:${gamer} &nbsp</span>`).css(gamerTextCss());
         $('#you').text('').append(youText).append(colorCube(snakeColor));
 
-        var socket = io('http://172.17.184.23:8877');
+        var socket = io('http://172.17.184.35:8877');
         socket.on('SNAKE_MOVE', function (data) {
             var enemyObject;
             var enemySnake;
@@ -83,7 +84,7 @@
                 $('#players').append(enemyGamer);
             });
 
-            console.log(data);
+
 
 
             ctx.fillStyle = enemyObject.snakeColor;
@@ -96,9 +97,56 @@
 
             }
         });
-        socket.on('GENERATE_FOOD',function (data) {
+        socket.on('GENERATE_FOOD', function (data) {
             ctx.fillStyle = 'green';
-           ctx.fillRect(data.foodx,data.foody,snakeSize,snakeSize); 
+            ctx.fillRect(data.foodx, data.foody, snakeSize, snakeSize);
+            foods.push({ foodx: data.foodx, foody: data.foody });
+        });
+        socket.on('EAT_FOOD', function (data) {
+            console.log(data);
+            for (var i = 0; i < foods.length; i++) {
+                var food = foods[i];
+                if (food.foodx == data.foodx && food.foody == data.foody) {
+                    foods.splice(i, 1);
+                }
+
+            };
+            if (data.gamer === gamer) {
+                var newHead = { x: 0, y: 0 };
+                var head = snake[snake.length - 1];
+                switch (direction) {
+                    case 'right':
+                        newHead.x = head.x + snakeSize;
+                        newHead.y = head.y;
+                        break;
+                    case 'down':
+                        newHead.x = head.x;
+                        newHead.y = head.y + snakeSize;
+
+                        break;
+                    case 'left':
+                        newHead.x = head.x - snakeSize;
+                        newHead.y = head.y;
+
+                        break;
+                    case 'up':
+                        newHead.x = head.x;
+                        newHead.y = head.y - snakeSize;
+                        break;
+
+                    default:
+                        break;
+                }
+                snake.push(newHead);
+            }
+            else {
+                var tail = snake[0];
+                ctx.clearRect(tail.x, tail.y, snakeSize, snakeSize);
+                snake.splice(0, 1);
+                if (snake.length == 0) {
+                    snakeBornAgain();
+                }
+            }
         });
 
 
@@ -107,7 +155,7 @@
 
 
         document.addEventListener("keydown", function (event) {
-            console.log(event.keyCode);
+
             switch (event.keyCode) {
                 case 37:
                     //left
@@ -181,9 +229,19 @@
             snake.push(newHead);
             drawSnake(ctx);
             socket.emit('SNAKE_MOVE', { gamer: gamer, snake: JSON.stringify(snake), snakeColor: snakeColor });
+            eatify(newHead);
 
+        }
 
+        function eatify(head) {
+            for (var i = 0; i < foods.length; i++) {
+                var food = foods[i];
+                if (food.foodx == head.x && food.foody == head.y) {
+                    //foods.splice(i, 1);
+                    socket.emit('EAT_FOOD', { gamer: gamer, foodx: food.foodx, foody: food.foody });
+                }
 
+            }
         }
 
         function drawSnake(ctx) {
@@ -201,22 +259,22 @@
         }
 
         function colorCube(color) {
-          return $('<span></span>').css({
-            'background-color': color,
-            'width': snakeSize,
-            'height': snakeSize,
-            'position': 'fixed',
-            'display': 'inline-block'
-          });
+            return $('<span></span>').css({
+                'background-color': color,
+                'width': snakeSize,
+                'height': snakeSize,
+                'position': 'fixed',
+                'display': 'inline-block'
+            });
         }
 
         function gamerTextCss() {
-          return {
-            'display': 'inline-block',
-            'vertical-align': 'middle',
-            'height': snakeSize,
-            'padding-bottom': '3px'
-          };
+            return {
+                'display': 'inline-block',
+                'vertical-align': 'middle',
+                'height': snakeSize,
+                'padding-bottom': '3px'
+            };
         }
 
         function generateFood() {
@@ -230,8 +288,31 @@
                 foody = foody + 25 - foody % 25;
             }
             ctx.fillRect(foodx, foody, snakeSize, snakeSize);
+            foods.push({ foodx: foodx, foody: foody });
             socket.emit('GENERATE_FOOD', { foodx: foodx, foody: foody });
         }
+        function snakeBornAgain() {
+            snake = [{
+                x: 0,
+                y: 0
+            }, {
+                x: 25,
+                y: 0
+            }, {
+                x: 50,
+                y: 0
+            }, {
+                x: 75,
+                y: 0
+            }, {
+                x: 100,
+                y: 0
+            }];
+
+
+            direction = 'right';
+            snakeColor = '#' + Math.random().toString(16).substr(-6);
+        };
 
         setInterval(gameLoop, 100);
         setInterval(generateFood, 5000);

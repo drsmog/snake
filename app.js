@@ -31,5 +31,9 @@ io.on('connection', function (socket) {
     console.log(data);
     socket.broadcast.emit('GENERATE_FOOD',data);
   });
+  socket.on('EAT_FOOD',function (data) {
+    console.log(data);
+    io.emit('EAT_FOOD',data);
+  });
 });
     
