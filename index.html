@@ -50,9 +50,10 @@
         var canvas = document.getElementById('sgame');
         var ctx = canvas.getContext('2d');
 
-        $('#you').text(`you:${gamer}`).css('color', snakeColor);
+        var youText = $(`<span>you:${gamer} &nbsp</span>`).css(gamerTextCss());
+        $('#you').text('').append(youText).append(colorCube(snakeColor));
 
-        var socket = io('http://172.17.184.35:8877');
+        var socket = io('http://172.17.184.23:8877');
         socket.on('SNAKE_MOVE', function (data) {
             var enemyObject;
             var enemySnake;
@@ -77,7 +78,8 @@
             }
             $('#players').empty();
             enemies.forEach(function (e) {
-                var enemyGamer = $(`<p>${e.gamer} : |||||||||||</p>`).css('color', e.snakeColor);
+                var gamerText = $(`<span>${e.gamer} : &nbsp</span>`).css(gamerTextCss());
+                var enemyGamer = $(`<p></p>`).append(gamerText).append(colorCube(e.snakeColor));
                 $('#players').append(enemyGamer);
             });
 
@@ -196,6 +198,25 @@
             }
 
 
+        }
+
+        function colorCube(color) {
+          return $('<span></span>').css({
+            'background-color': color,
+            'width': snakeSize,
+            'height': snakeSize,
+            'position': 'fixed',
+            'display': 'inline-block'
+          });
+        }
+
+        function gamerTextCss() {
+          return {
+            'display': 'inline-block',
+            'vertical-align': 'middle',
+            'height': snakeSize,
+            'padding-bottom': '3px'
+          };
         }
 
         function generateFood() {
