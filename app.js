@@ -17,6 +17,21 @@ function handler (req, res) {
   });
 }
 
+app.on('request', function (req, res) {
+  if (req.url === '/directions.js') {
+    fs.readFile(__dirname + '/directions.js',
+    function (err, data) {
+      if (err) {
+        res.writeHead(500);
+        return res.end('Error loading directions.js');
+      }
+
+      res.writeHead(200);
+      res.end(data);
+    });
+  }
+});
+
 io.on('connection', function (socket) {
   socket.emit('news', { hello: 'world' });
   socket.on('REG_PLAYER', function (data) {
