@@ -4,6 +4,9 @@ var fs = require('fs');
 
 app.listen(process.env.PORT || 8877);
 
+var directionsData;
+var directionsStatus = 200;
+
 function handler (req, res) {
   fs.readFile(__dirname + '/index.html',
   function (err, data) {
@@ -15,20 +18,27 @@ function handler (req, res) {
     res.writeHead(200);
     res.end(data);
   });
+
+  fs.readFile(__dirname + '/directions.js',
+  function (err, data) {
+    if (err) {
+      directionsStatus = 500;
+    }
+
+    directionsStatus = 200;
+    directionsData = data;
+  });
 }
 
 app.on('request', function (req, res) {
   if (req.url === '/directions.js') {
-    fs.readFile(__dirname + '/directions.js',
-    function (err, data) {
-      if (err) {
-        res.writeHead(500);
-        return res.end('Error loading directions.js');
-      }
+    if (directionsStatus === 500) {
+      res.writeHead(500);
+      return res.end('Error loading directions.js');
+    }
 
-      res.writeHead(200);
-      res.end(data);
-    });
+    res.writeHead(200);
+    res.end(directionsData);
   }
 });
 
