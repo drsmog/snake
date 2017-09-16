@@ -303,9 +303,7 @@
         if (counter === 5) clearInterval(interval);
 
         var rectParams = direction.calculateRectParams(snakeSize, stepSize);
-        var tailDirection = snake[1] ?
-          calculateDirection(tail, snake[1]) :
-          direction;
+        var tailDirection = calculateDirection(tail, snake[0], direction);
         var clearParams = tailDirection.calculateRectParams(snakeSize, stepSize);
 
         clearPoint.x += clearParams.xChange;
