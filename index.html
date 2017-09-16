@@ -85,18 +85,7 @@
                 $('#players').append(enemyGamer);
             });
 
-
-
-
-            ctx.fillStyle = enemyObject.snakeColor;
-            for (var i = 0; i < enemySnake.length; i++) {
-                var item = enemySnake[i];
-                if (i == enemySnake.length - 1) {
-                    ctx.fillStyle = 'red';
-                }
-                ctx.fillRect(item.x, item.y, snakeSize, snakeSize);
-
-            }
+            drawSnake(ctx, enemySnake, enemyObject.snakeColor);
         });
         socket.on('GENERATE_FOOD', function (data) {
             ctx.fillStyle = 'green';
@@ -159,7 +148,7 @@
             ctx.clearRect(tail.x, tail.y, snakeSize, snakeSize);
             snake.splice(0, 1);
             snake.push(newHead);
-            drawSnake(ctx);
+            drawSnake(ctx, snake, snakeColor);
             socket.emit('SNAKE_MOVE', { gamer: gamer, snake: JSON.stringify(snake), snakeColor: snakeColor });
             eatify(newHead);
 
@@ -176,18 +165,15 @@
             }
         }
 
-        function drawSnake(ctx) {
-            ctx.fillStyle = snakeColor;
+        function drawSnake(ctx, snake, color) {
+            ctx.fillStyle = color;
             for (var i = 0; i < snake.length; i++) {
                 var item = snake[i];
                 if (i == snake.length - 1) {
                     ctx.fillStyle = 'red';
                 }
                 ctx.fillRect(item.x, item.y, snakeSize, snakeSize);
-
             }
-
-
         }
 
         function colorCube(color) {
