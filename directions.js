@@ -96,3 +96,10 @@ function chooseDirection(keyCode) {
 
   return null;
 }
+
+function calculateDirection(startPoint, nextPoint) {
+  if (startPoint.y === nextPoint.y)
+    return startPoint.x < nextPoint.x ? directions.RIGHT : directions.LEFT;
+
+  return startPoint.y < nextPoint.y ? directions.DOWN : directions.UP;
+}

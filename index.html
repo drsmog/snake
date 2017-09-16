@@ -298,20 +298,24 @@
       };
 
       var rectParams = direction.calculateRectParams(snakeSize, stepSize);
+      var tailDirection = snake[1] ?
+        calculateDirection(tail, snake[1]) :
+        direction;
+      var clearParams = tailDirection.calculateRectParams(snakeSize, stepSize);
 
       var interval = setInterval(function() {
         counter++;
 
         if (counter === 5) clearInterval(interval);
 
-        clearPoint.x += rectParams.xChange;
-        clearPoint.y += rectParams.yChange;
+        clearPoint.x += clearParams.xChange;
+        clearPoint.y += clearParams.yChange;
 
         ctx.clearRect(
           clearPoint.x,
           clearPoint.y,
-          rectParams.xSize,
-          rectParams.ySize
+          clearParams.xSize,
+          clearParams.ySize
         );
 
         headPoint.x += rectParams.xChange;
@@ -342,8 +346,8 @@
       var rect = direction.calculateRectParams(snakeSize, snakeSize);
 
       return
-      oldSnake[0].x + rect.xChange === newSnake[0].x &&
-        oldSnake[0].y + rect.yChange === newSnake[0].y;
+      oldSnake[oldSnake.length - 1].x + rect.xChange === newSnake[newSnake.length - 1].x &&
+        oldSnake[oldSnake.length - 1].y + rect.yChange === newSnake[newSnake.length - 1].y;
     }
 
     setInterval(gameLoop, 100);
