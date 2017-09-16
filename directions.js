@@ -69,6 +69,13 @@ var directions = {
   }
 };
 
+var directionsDict = {
+  'right': directions.RIGHT,
+  'down': directions.DOWN,
+  'left': directions.LEFT,
+  'up': directions.UP
+};
+
 Object.freeze(directions);
 
 function chooseDirection(keyCode) {

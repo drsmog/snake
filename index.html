@@ -59,15 +59,33 @@
     socket.on('SNAKE_MOVE', function(data) {
       var enemyObject;
       var enemySnake;
+      var enemyDirection;
       enemies.forEach(function(enemy) {
         if (enemy.gamer == data.gamer) {
-          enemy.snake.forEach(function(item) {
-            ctx.clearRect(item.x, item.y, snakeSize, snakeSize);
-          });
           enemy.snakeColor = data.snakeColor;
-          enemyObject = enemy;
-          enemy.snake = JSON.parse(data.snake);
-          enemySnake = enemy.snake;
+          enemyDirection = directionsDict[data.direction];
+          enemySnake = JSON.parse(data.snake);
+
+          if (
+            enemyDirection &&
+            wasNormalMove(enemy.snake, enemySnake, enemyDirection)
+          ) {
+            animatedMove(
+              enemy.snake,
+              enemySnake[enemySnake.length - 1],
+              enemyDirection,
+              enemy.snakeColor
+            );
+          } else {
+            enemy.snake.forEach(function(item) {
+              ctx.clearRect(item.x, item.y, snakeSize, snakeSize);
+            });
+            enemyObject = enemy;
+            enemy.snake = enemySnake;
+            enemy.direction = enemyDirection;
+
+            drawSnake(ctx, enemySnake, enemyObject.snakeColor);
+          }
 
         }
       });
@@ -89,7 +107,6 @@
         $('#players').append(enemyGamer);
       });
 
-      drawSnake(ctx, enemySnake, enemyObject.snakeColor);
     });
     socket.on('GENERATE_FOOD', function(data) {
       ctx.fillStyle = 'green';
@@ -318,6 +335,14 @@
           rectParams.ySize
         );
       }, 15);
+    }
+
+    function wasNormalMove(oldSnake, newSnake, direction) {
+      var rect = direction.calculateRectParams(snakeSize, snakeSize);
+
+      return
+      oldSnake[0].x + rect.xChange === newSnake[0].x &&
+        oldSnake[0].y + rect.yChange === newSnake[0].y;
     }
 
     setInterval(gameLoop, 100);
