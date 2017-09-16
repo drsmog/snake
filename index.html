@@ -1,241 +1,329 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="directions.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="directions.js"></script>
 </head>
 
 <body>
-    <div>
-        <label id="you">you: </label>
+  <div>
+    <label id="you">you: </label>
 
-    </div>
-    <div id="players">
+  </div>
+  <div id="players">
 
-    </div>
-    <canvas id="sgame" width="800" height="600" style="background-color:aliceblue;border: solid black">
+  </div>
+  <canvas id="sgame" width="800" height="600" style="background-color:aliceblue;border: solid black">
     </canvas>
 
-    <script>
-        var snake = [{
-            x: 0,
-            y: 0
-        }, {
-            x: 25,
-            y: 0
-        }, {
-            x: 50,
-            y: 0
-        }, {
-            x: 75,
-            y: 0
-        }, {
-            x: 100,
-            y: 0
-        }];
+  <script>
+    var snake = [{
+      x: 0,
+      y: 0
+    }, {
+      x: 25,
+      y: 0
+    }, {
+      x: 50,
+      y: 0
+    }, {
+      x: 75,
+      y: 0
+    }, {
+      x: 100,
+      y: 0
+    }];
 
-        var snakeSize = 25;
-        var direction = directions.RIGHT;
-        var snakeColor = '#' + Math.random().toString(16).substr(-6);
-
-
-        var gamer = prompt('your game nick name pls');
-        var enemies = [];
-        var foods = [];
-
-        //init game
-        var canvas = document.getElementById('sgame');
-        var ctx = canvas.getContext('2d');
-
-        var youText = $(`<span>you:${gamer} &nbsp</span>`).css(gamerTextCss());
-        $('#you').text('').append(youText).append(colorCube(snakeColor));
-
-        var socket = io(window.location.href);
-        socket.on('SNAKE_MOVE', function (data) {
-            var enemyObject;
-            var enemySnake;
-            enemies.forEach(function (enemy) {
-                if (enemy.gamer == data.gamer) {
-                    enemy.snake.forEach(function (item) {
-                        ctx.clearRect(item.x, item.y, snakeSize, snakeSize);
-                    });
-                    enemy.snakeColor = data.snakeColor;
-                    enemyObject = enemy;
-                    enemy.snake = JSON.parse(data.snake);
-                    enemySnake = enemy.snake;
-
-                }
-            });
-
-            if (!enemyObject) { //cant find add new player
-                enemyObject = { gamer: data.gamer, snake: JSON.parse(data.snake), snakeColor: data.snakeColor };
-                enemies.push(enemyObject);
-                enemySnake = enemyObject.snake;
-
-            }
-            $('#players').empty();
-            enemies.forEach(function (e) {
-                var gamerText = $(`<span>${e.gamer} : &nbsp</span>`).css(gamerTextCss());
-                var enemyGamer = $(`<p></p>`).append(gamerText).append(colorCube(e.snakeColor));
-                $('#players').append(enemyGamer);
-            });
-
-            drawSnake(ctx, enemySnake, enemyObject.snakeColor);
-        });
-        socket.on('GENERATE_FOOD', function (data) {
-            ctx.fillStyle = 'green';
-            ctx.fillRect(data.foodx, data.foody, snakeSize, snakeSize);
-            foods.push({ foodx: data.foodx, foody: data.foody });
-        });
-        socket.on('EAT_FOOD', function (data) {
-            console.log(data);
-            for (var i = 0; i < foods.length; i++) {
-                var food = foods[i];
-                if (food.foodx == data.foodx && food.foody == data.foody) {
-                    foods.splice(i, 1);
-                }
-
-            };
-            if (data.gamer === gamer) {
-                var head = snake[snake.length - 1];
-                var newHead = direction.placeNewHead(head, snakeSize);
-                snake.push(newHead);
-            }
-            else {
-                var tail = snake[0];
-                ctx.clearRect(tail.x, tail.y, snakeSize, snakeSize);
-                snake.splice(0, 1);
-                if (snake.length == 0) {
-                    snakeBornAgain();
-                }
-            }
-        });
+    var snakeSize = 25;
+    var direction = directions.RIGHT;
+    var snakeColor = '#' + Math.random().toString(16).substr(-6);
 
 
+    var gamer = prompt('your game nick name pls');
+    var enemies = [];
+    var foods = [];
 
+    //init game
+    var canvas = document.getElementById('sgame');
+    var ctx = canvas.getContext('2d');
 
+    var youText = $(`<span>you:${gamer} &nbsp</span>`).css(gamerTextCss());
+    $('#you').text('').append(youText).append(colorCube(snakeColor));
 
-
-        document.addEventListener("keydown", function (event) {
-            var chosen = chooseDirection(event.keyCode);
-
-            if (chosen) direction = chosen;
-        });
-
-        //game loop
-        function gameLoop() {
-            var head = snake[snake.length - 1];
-            var tail = snake[0];
-            var newHead = direction.placeNewHead(head, snakeSize);
-
-            if (newHead.x >= 800) {
-                newHead.x = newHead.x - 800;
-            }
-            if (newHead.y >= 600) {
-                newHead.y = newHead.y - 600;
-            }
-            if (newHead.x < 0) {
-                newHead.x = newHead.x + 800;
-            }
-            if (newHead.y < 0) {
-                newHead.y = newHead.y + 600;
-            }
-            ctx.clearRect(tail.x, tail.y, snakeSize, snakeSize);
-            snake.splice(0, 1);
-            snake.push(newHead);
-            drawSnake(ctx, snake, snakeColor);
-            socket.emit('SNAKE_MOVE', { gamer: gamer, snake: JSON.stringify(snake), snakeColor: snakeColor });
-            eatify(newHead);
+    var socket = io(window.location.href);
+    socket.on('SNAKE_MOVE', function(data) {
+      var enemyObject;
+      var enemySnake;
+      enemies.forEach(function(enemy) {
+        if (enemy.gamer == data.gamer) {
+          enemy.snake.forEach(function(item) {
+            ctx.clearRect(item.x, item.y, snakeSize, snakeSize);
+          });
+          enemy.snakeColor = data.snakeColor;
+          enemyObject = enemy;
+          enemy.snake = JSON.parse(data.snake);
+          enemySnake = enemy.snake;
 
         }
+      });
 
-        function eatify(head) {
-            for (var i = 0; i < foods.length; i++) {
-                var food = foods[i];
-                if (food.foodx == head.x && food.foody == head.y) {
-                    //foods.splice(i, 1);
-                    socket.emit('EAT_FOOD', { gamer: gamer, foodx: food.foodx, foody: food.foody });
-                }
-
-            }
-        }
-
-        function drawSnake(ctx, snake, color) {
-            ctx.fillStyle = color;
-            for (var i = 0; i < snake.length; i++) {
-                var item = snake[i];
-                if (i == snake.length - 1) {
-                    ctx.fillStyle = 'red';
-                }
-                ctx.fillRect(item.x, item.y, snakeSize, snakeSize);
-            }
-        }
-
-        function colorCube(color) {
-            return $('<span></span>').css({
-                'background-color': color,
-                'width': snakeSize,
-                'height': snakeSize,
-                'position': 'fixed',
-                'display': 'inline-block'
-            });
-        }
-
-        function gamerTextCss() {
-            return {
-                'display': 'inline-block',
-                'vertical-align': 'middle',
-                'height': snakeSize,
-                'padding-bottom': '3px'
-            };
-        }
-
-        function generateFood() {
-            var foodx = Math.floor((Math.random() * 1000) % 800);
-            var foody = Math.floor((Math.random() * 1000) % 600);
-
-            if (foodx % 25 != 0) {
-                foodx = foodx + 25 - foodx % 25;
-            }
-            if (foody % 25 != 0) {
-                foody = foody + 25 - foody % 25;
-            }
-            ctx.fillRect(foodx, foody, snakeSize, snakeSize);
-            foods.push({ foodx: foodx, foody: foody });
-            socket.emit('GENERATE_FOOD', { foodx: foodx, foody: foody });
-        }
-        function snakeBornAgain() {
-            snake = [{
-                x: 0,
-                y: 0
-            }, {
-                x: 25,
-                y: 0
-            }, {
-                x: 50,
-                y: 0
-            }, {
-                x: 75,
-                y: 0
-            }, {
-                x: 100,
-                y: 0
-            }];
-
-
-            direction = directions.RIGHT;
-            snakeColor = '#' + Math.random().toString(16).substr(-6);
+      if (!enemyObject) { //cant find add new player
+        enemyObject = {
+          gamer: data.gamer,
+          snake: JSON.parse(data.snake),
+          snakeColor: data.snakeColor
         };
+        enemies.push(enemyObject);
+        enemySnake = enemyObject.snake;
 
-        setInterval(gameLoop, 100);
-        setInterval(generateFood, 5000);
-        //alert('xeii');
-    </script>
+      }
+      $('#players').empty();
+      enemies.forEach(function(e) {
+        var gamerText = $(`<span>${e.gamer} : &nbsp</span>`).css(gamerTextCss());
+        var enemyGamer = $(`<p></p>`).append(gamerText).append(colorCube(e.snakeColor));
+        $('#players').append(enemyGamer);
+      });
+
+      drawSnake(ctx, enemySnake, enemyObject.snakeColor);
+    });
+    socket.on('GENERATE_FOOD', function(data) {
+      ctx.fillStyle = 'green';
+      ctx.fillRect(data.foodx, data.foody, snakeSize, snakeSize);
+      foods.push({
+        foodx: data.foodx,
+        foody: data.foody
+      });
+    });
+    socket.on('EAT_FOOD', function(data) {
+      console.log(data);
+      for (var i = 0; i < foods.length; i++) {
+        var food = foods[i];
+        if (food.foodx == data.foodx && food.foody == data.foody) {
+          foods.splice(i, 1);
+        }
+
+      };
+      if (data.gamer === gamer) {
+        var head = snake[snake.length - 1];
+        var newHead = direction.placeNewHead(head, snakeSize);
+        snake.push(newHead);
+      } else {
+        var tail = snake[0];
+        ctx.clearRect(tail.x, tail.y, snakeSize, snakeSize);
+        snake.splice(0, 1);
+        if (snake.length == 0) {
+          snakeBornAgain();
+        }
+      }
+    });
+
+
+
+
+
+
+    document.addEventListener("keydown", function(event) {
+      var chosen = chooseDirection(event.keyCode);
+
+      if (chosen) direction = chosen;
+    });
+
+    //game loop
+    function gameLoop() {
+      var newHead = direction.placeNewHead(head, snakeSize);
+
+      if (newHead.x >= 800) {
+        newHead.x = newHead.x - 800;
+      }
+      if (newHead.y >= 600) {
+        newHead.y = newHead.y - 600;
+      }
+      if (newHead.x < 0) {
+        newHead.x = newHead.x + 800;
+      }
+      if (newHead.y < 0) {
+        newHead.y = newHead.y + 600;
+      }
+
+      animatedMove(snake, newHead, direction, snakeColor);
+
+      socket.emit('SNAKE_MOVE', {
+        gamer: gamer,
+        snake: JSON.stringify(snake),
+        snakeColor: snakeColor,
+        direction: direction.text
+      });
+      eatify(newHead);
+
+    }
+
+    function eatify(head) {
+      for (var i = 0; i < foods.length; i++) {
+        var food = foods[i];
+        if (food.foodx == head.x && food.foody == head.y) {
+          //foods.splice(i, 1);
+          socket.emit('EAT_FOOD', {
+            gamer: gamer,
+            foodx: food.foodx,
+            foody: food.foody
+          });
+        }
+
+      }
+    }
+
+    function drawSnake(ctx, snake, color, start, end) {
+      if (!start) start = 0;
+      if (!end) end = snake.length;
+
+      ctx.fillStyle = color;
+      for (var i = start; i < end; i++) {
+        var item = snake[i];
+        if (i == snake.length - 1) {
+          ctx.fillStyle = 'red';
+        }
+        ctx.fillRect(item.x, item.y, snakeSize, snakeSize);
+      }
+    }
+
+    function colorCube(color) {
+      return $('<span></span>').css({
+        'background-color': color,
+        'width': snakeSize,
+        'height': snakeSize,
+        'position': 'fixed',
+        'display': 'inline-block'
+      });
+    }
+
+    function gamerTextCss() {
+      return {
+        'display': 'inline-block',
+        'vertical-align': 'middle',
+        'height': snakeSize,
+        'padding-bottom': '3px'
+      };
+    }
+
+    function generateFood() {
+      var foodx = Math.floor((Math.random() * 1000) % 800);
+      var foody = Math.floor((Math.random() * 1000) % 600);
+
+      if (foodx % 25 != 0) {
+        foodx = foodx + 25 - foodx % 25;
+      }
+      if (foody % 25 != 0) {
+        foody = foody + 25 - foody % 25;
+      }
+      ctx.fillRect(foodx, foody, snakeSize, snakeSize);
+      foods.push({
+        foodx: foodx,
+        foody: foody
+      });
+      socket.emit('GENERATE_FOOD', {
+        foodx: foodx,
+        foody: foody
+      });
+    }
+
+    function snakeBornAgain() {
+      snake = [{
+        x: 0,
+        y: 0
+      }, {
+        x: 25,
+        y: 0
+      }, {
+        x: 50,
+        y: 0
+      }, {
+        x: 75,
+        y: 0
+      }, {
+        x: 100,
+        y: 0
+      }];
+
+
+      direction = directions.RIGHT;
+      snakeColor = '#' + Math.random().toString(16).substr(-6);
+    };
+
+    function animatedMove(snake, newHead, direction, color) {
+      var tail = snake[0];
+      var head = snake[snake.length - 1];
+      var stepSize = snakeSize / 5;
+
+      drawSnake(ctx, snake, color, 1, snake.length - 1);
+
+      snake.splice(0, 1);
+      snake.push(newHead);
+
+      var counter = 0;
+
+      var clearPoint = {
+        x: tail.x,
+        y: tail.y
+      };
+      var headPoint = {
+        x: head.x,
+        y: head.y
+      };
+      var newHeadPoint = {
+        x: newHead.x,
+        y: newHead.y
+      };
+
+      var rectParams = direction.calculateRectParams(snakeSize, stepSize);
+
+      var interval = setInterval(function() {
+        counter++;
+
+        if (counter === 5) clearInterval(interval);
+
+        clearPoint.x += rectParams.xChange;
+        clearPoint.y += rectParams.yChange;
+
+        ctx.clearRect(
+          clearPoint.x,
+          clearPoint.y,
+          rectParams.xSize,
+          rectParams.ySize
+        );
+
+        headPoint.x += rectParams.xChange;
+        headPoint.y += rectParams.yChange;
+
+        ctx.fillStyle = color;
+        ctx.fillRect(
+          headPoint.x,
+          headPoint.y,
+          rectParams.xSize,
+          rectParams.ySize
+        );
+
+        newHeadPoint.x += rectParams.xChange;
+        newHeadPoint.y += rectParams.yChange;
+
+        ctx.fillStyle = 'red';
+        ctx.fillRect(
+          newHeadPoint.x,
+          newHeadPoint.y,
+          rectParams.xSize,
+          rectParams.ySize
+        );
+      }, 15);
+    }
+
+    setInterval(gameLoop, 100);
+    setInterval(generateFood, 5000);
+    //alert('xeii');
+  </script>
 
 </body>
 
