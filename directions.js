@@ -6,6 +6,14 @@ var directions = {
         x: head.x + snakeSize,
         y: head.y
       };
+    },
+    calculateRectParams: function(snakeSize, stepSize) {
+      return {
+        xChange: 0 + stepSize,
+        yChange: 0,
+        xSize: stepSize,
+        ySize: snakeSize
+      };
     }
   },
   DOWN: {
@@ -14,6 +22,14 @@ var directions = {
       return {
         x: head.x,
         y: head.y + snakeSize
+      };
+    },
+    calculateRectParams: function(snakeSize, stepSize) {
+      return {
+        xChange: 0,
+        yChange: 0 + stepSize,
+        xSize: snakeSize,
+        ySize: stepSize
       };
     }
   },
@@ -24,6 +40,14 @@ var directions = {
         x: head.x - snakeSize,
         y: head.y
       };
+    },
+    calculateRectParams: function(snakeSize, stepSize) {
+      return {
+        xChange: 0 - stepSize,
+        yChange: 0,
+        xSize: stepSize,
+        ySize: snakeSize
+      };
     }
   },
   UP: {
@@ -32,6 +56,14 @@ var directions = {
       return {
         x: head.x,
         y: head.y - snakeSize
+      };
+    },
+    calculateRectParams: function(snakeSize, stepSize) {
+      return {
+        xChange: 0,
+        yChange: 0 - stepSize,
+        xSize: snakeSize,
+        ySize: stepSize
       };
     }
   }
