@@ -152,6 +152,7 @@
 
     //game loop
     function gameLoop() {
+      var head = snake[snake.length - 1];
       var newHead = direction.placeNewHead(head, snakeSize);
 
       if (newHead.x >= 800) {
