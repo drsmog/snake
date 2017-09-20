@@ -65,6 +65,7 @@
           enemy.snakeColor = data.snakeColor;
           enemyDirection = directionsDict[data.direction];
           enemySnake = JSON.parse(data.snake);
+          enemyObject = enemy;
 
           if (
             enemyDirection &&
@@ -80,7 +81,6 @@
             enemy.snake.forEach(function(item) {
               ctx.clearRect(item.x, item.y, snakeSize, snakeSize);
             });
-            enemyObject = enemy;
             enemy.snake = enemySnake;
             enemy.direction = enemyDirection;
 
@@ -341,11 +341,10 @@
     }
 
     function wasNormalMove(oldSnake, newSnake, direction) {
-      var rect = direction.calculateRectParams(snakeSize, snakeSize);
+      var newHead = direction.placeNewHead(oldSnake[oldSnake.length - 1], snakeSize);
 
-      return
-      oldSnake[oldSnake.length - 1].x + rect.xChange === newSnake[newSnake.length - 1].x &&
-        oldSnake[oldSnake.length - 1].y + rect.yChange === newSnake[newSnake.length - 1].y;
+      return newHead.x === newSnake[newSnake.length - 1].x &&
+        newHead.y === newSnake[newSnake.length - 1].y;
     }
 
     setInterval(gameLoop, 100);
