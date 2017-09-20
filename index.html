@@ -8,6 +8,7 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   <script src="/socket.io/socket.io.js"></script>
   <script src="directions.js"></script>
+  <script src="synchronizer.js"></script>
 </head>
 
 <body>
@@ -41,6 +42,7 @@
 
     var snakeSize = 25;
     var direction = directions.RIGHT;
+    var synchronizer = new Synchronizer();
     var snakeColor = '#' + Math.random().toString(16).substr(-6);
 
 
@@ -62,31 +64,36 @@
       var enemyDirection;
       enemies.forEach(function(enemy) {
         if (enemy.gamer == data.gamer) {
-          enemy.snakeColor = data.snakeColor;
-          enemyDirection = directionsDict[data.direction];
-          enemySnake = JSON.parse(data.snake);
           enemyObject = enemy;
 
-          if (
-            enemyDirection &&
-            wasNormalMove(enemy.snake, enemySnake, enemyDirection)
-          ) {
-            animatedMove(
-              enemy.snake,
-              enemySnake[enemySnake.length - 1],
-              enemyDirection,
-              enemy.snakeColor
-            );
-          } else {
-            enemy.snake.forEach(function(item) {
-              ctx.clearRect(item.x, item.y, snakeSize, snakeSize);
-            });
-            enemy.snake = enemySnake;
-            enemy.direction = enemyDirection;
+          enemyObject.synchronizer.execute(function() {
 
-            drawSnake(ctx, enemySnake, enemyObject.snakeColor);
-          }
+            enemy.snakeColor = data.snakeColor;
+            enemyDirection = directionsDict[data.direction];
+            enemySnake = JSON.parse(data.snake);
 
+            if (
+              enemyDirection &&
+              wasNormalMove(enemy.snake, enemySnake, enemyDirection)
+            ) {
+              animatedMove(
+                enemy.snake,
+                enemySnake[enemySnake.length - 1],
+                enemyDirection,
+                enemy.snakeColor,
+                enemyObject.synchronizer
+              );
+            } else {
+              enemy.snake.forEach(function(item) {
+                ctx.clearRect(item.x, item.y, snakeSize, snakeSize);
+              });
+              enemy.snake = enemySnake;
+              enemy.direction = enemyDirection;
+
+              drawSnake(ctx, enemySnake, enemyObject.snakeColor);
+            }
+
+          });
         }
       });
 
@@ -94,7 +101,8 @@
         enemyObject = {
           gamer: data.gamer,
           snake: JSON.parse(data.snake),
-          snakeColor: data.snakeColor
+          snakeColor: data.snakeColor,
+          synchronizer: new Synchronizer()
         };
         enemies.push(enemyObject);
         enemySnake = enemyObject.snake;
@@ -152,32 +160,36 @@
 
     //game loop
     function gameLoop() {
-      var head = snake[snake.length - 1];
-      var newHead = direction.placeNewHead(head, snakeSize);
+      synchronizer.execute(function() {
 
-      if (newHead.x >= 800) {
-        newHead.x = newHead.x - 800;
-      }
-      if (newHead.y >= 600) {
-        newHead.y = newHead.y - 600;
-      }
-      if (newHead.x < 0) {
-        newHead.x = newHead.x + 800;
-      }
-      if (newHead.y < 0) {
-        newHead.y = newHead.y + 600;
-      }
+        var head = snake[snake.length - 1];
+        var newHead = direction.placeNewHead(head, snakeSize);
 
-      animatedMove(snake, newHead, direction, snakeColor);
+        if (newHead.x >= 800) {
+          newHead.x = newHead.x - 800;
+        }
+        if (newHead.y >= 600) {
+          newHead.y = newHead.y - 600;
+        }
+        if (newHead.x < 0) {
+          newHead.x = newHead.x + 800;
+        }
+        if (newHead.y < 0) {
+          newHead.y = newHead.y + 600;
+        }
 
-      socket.emit('SNAKE_MOVE', {
-        gamer: gamer,
-        snake: JSON.stringify(snake),
-        snakeColor: snakeColor,
-        direction: direction.text
+        animatedMove(snake, newHead, direction, snakeColor, synchronizer);
+
+        socket.emit('SNAKE_MOVE', {
+          gamer: gamer,
+          snake: JSON.stringify(snake),
+          snakeColor: snakeColor,
+          direction: direction.text
+        });
+
+        eatify(newHead);
+
       });
-      eatify(newHead);
-
     }
 
     function eatify(head) {
@@ -272,7 +284,9 @@
       snakeColor = '#' + Math.random().toString(16).substr(-6);
     };
 
-    function animatedMove(snake, newHead, direction, color) {
+    function animatedMove(snake, newHead, direction, color, synchronizer) {
+      synchronizer.startNewSession();
+
       var tail = snake[0];
       var head = snake[snake.length - 1];
       var stepSize = snakeSize / 5;
@@ -299,8 +313,6 @@
 
       var interval = setInterval(function() {
         counter++;
-
-        if (counter === 5) clearInterval(interval);
 
         var rectParams = direction.calculateRectParams(snakeSize, stepSize);
         var tailDirection = calculateDirection(tail, snake[0], direction);
@@ -337,6 +349,12 @@
           rectParams.xSize,
           rectParams.ySize
         );
+
+        if (counter === 5) {
+          clearInterval(interval);
+
+          synchronizer.finishSession();
+        }
       }, 15);
     }
 
