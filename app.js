@@ -1,9 +1,11 @@
-
-var app = require('http').createServer(handler)
+var app = require('http').createServer(handler);
 var io = require('socket.io')(app);
 var fs = require('fs');
 
-app.listen(process.env.PORT);
+app.listen(process.env.PORT || 8877);
+
+var directionsData;
+var directionsStatus = 200;
 
 function handler (req, res) {
   fs.readFile(__dirname + '/index.html',
@@ -16,7 +18,29 @@ function handler (req, res) {
     res.writeHead(200);
     res.end(data);
   });
+
+  fs.readFile(__dirname + '/directions.js',
+  function (err, data) {
+    if (err) {
+      directionsStatus = 500;
+    }
+
+    directionsStatus = 200;
+    directionsData = data;
+  });
 }
+
+app.on('request', function (req, res) {
+  if (req.url === '/directions.js') {
+    if (directionsStatus === 500) {
+      res.writeHead(500);
+      return res.end('Error loading directions.js');
+    }
+
+    res.writeHead(200);
+    res.end(directionsData);
+  }
+});
 
 io.on('connection', function (socket) {
   socket.emit('news', { hello: 'world' });
@@ -36,4 +60,3 @@ io.on('connection', function (socket) {
     io.emit('EAT_FOOD',data);
   });
 });
-    
