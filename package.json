@@ -10,6 +10,7 @@
     "peer": "0.2.8"
   },
   "scripts": {
+    "start": "set PORT=8877&node app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
