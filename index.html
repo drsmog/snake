@@ -33,15 +33,15 @@
       }, {
         x: 25,
         y: 0
-      // }, {
-      //   x: 50,
-      //   y: 0
-      // }, {
-      //   x: 75,
-      //   y: 0
-      // }, {
-      //   x: 100,
-      //   y: 0
+      }, {
+        x: 50,
+        y: 0
+      }, {
+        x: 75,
+        y: 0
+      }, {
+        x: 100,
+        y: 0
       }
     ];
 
@@ -335,8 +335,8 @@
         doEdgeJumpIfReached(clearPoint);
       }
       
-      function redrawLastHead(lastOldHeadRectPoint) {
-        if (!lastOldHeadRectPoint) return;
+      function redrawLastHead() {
+        if (!headPoint) return;
 
         var oldHeadRectParams = oldHeadDirection.calculateNewRectParams(snakeSize, stepSize);
 
@@ -353,7 +353,7 @@
         doEdgeJumpIfReached(headPoint);
       }
 
-      function drawNewHead(lastRectPoint) {
+      function drawNewHead() {
         var rectParams = direction.calculateNewRectParams(snakeSize, stepSize);
 
         ctx.fillStyle = 'red';
@@ -451,7 +451,7 @@
         newHead.y === newSnake[newSnake.length - 1].y;
     }
 
-    setInterval(gameLoop, 100);
+    setInterval(gameLoop, 1000);
     setInterval(generateFood, 5000);
     //alert('xeii');
   </script>
