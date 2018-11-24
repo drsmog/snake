@@ -97,6 +97,7 @@ function chooseDirection(keyCode) {
   return null;
 }
 
+// FIXME: მარტო ზემოთ და მარცხნივ წასვლაზე აქვს შეცდომები და შემობრუნებზე კიდე. ამ ფუნქციის ბაგი იქნება.
 function calculateDirection(startPoint, nextPoint) {
   if (startPoint.y === nextPoint.y)
     return startPoint.x < nextPoint.x ? directions.RIGHT : directions.LEFT;
