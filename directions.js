@@ -7,16 +7,19 @@ var directions = {
         y: head.y
       };
     },
-    calculateNewRectParams: function(rect, snakeSize, stepSize) {
+    calculateNewRectParams: function(snakeSize, stepSize) {
       return {
-        newX: rect.x + stepSize,
-        newY: rect.y,
+        xChange: 0 + stepSize,
+        yChange: 0,
         xSize: stepSize,
         ySize: snakeSize
       };
     },
     animationStartPoint(rect) {
-      return rect;
+      return {
+        x: rect.x,
+        y: rect.y
+      };
     }
   },
   DOWN: {
@@ -27,16 +30,19 @@ var directions = {
         y: head.y + snakeSize
       };
     },
-    calculateNewRectParams: function(rect, snakeSize, stepSize) {
+    calculateNewRectParams: function(snakeSize, stepSize) {
       return {
-        newX: rect.x,
-        newY: rect.y + stepSize,
+        xChange: 0,
+        yChange: 0 + stepSize,
         xSize: snakeSize,
         ySize: stepSize
       };
     },
     animationStartPoint(rect) {
-      return rect;
+      return {
+        x: rect.x,
+        y: rect.y
+      };
     }
   },
   LEFT: {
@@ -47,10 +53,10 @@ var directions = {
         y: head.y
       };
     },
-    calculateNewRectParams: function(rect, snakeSize, stepSize) {
+    calculateNewRectParams: function(snakeSize, stepSize) {
       return {
-        newX: rect.x + snakeSize - stepSize,
-        newY: rect.y,
+        xChange: 0 - stepSize,
+        yChange: 0,
         xSize: stepSize,
         ySize: snakeSize
       };
@@ -70,10 +76,10 @@ var directions = {
         y: head.y - snakeSize
       };
     },
-    calculateNewRectParams: function(rect, snakeSize, stepSize) {
+    calculateNewRectParams: function(snakeSize, stepSize) {
       return {
-        newX: rect.x,
-        newY: rect.y + snakeSize - stepSize,
+        xChange: 0,
+        yChange: 0 - stepSize,
         xSize: snakeSize,
         ySize: stepSize
       };

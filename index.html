@@ -308,32 +308,21 @@
 
       var counter = 0;
 
-      var clearPoint = {
-        x: tail.x,
-        y: tail.y
-      };
-      var headPoint = {
-        x: head.x,
-        y: head.y
-      };
-      var newHeadPoint = {
-        x: newHead.x,
-        y: newHead.y
-      };
+      var tailDirection = calculateDirection(tail, snakeObject[0]);
+      var clearPoint = tailDirection ? tailDirection.animationStartPoint(tail, snakeSize) : null;
+
+      var oldHeadDirection = calculateDirection(headPrevious, head);
+      var headPoint = oldHeadDirection ? oldHeadDirection.animationStartPoint(head, snakeSize) : null;
       
-      var lastRectPoint = direction.animationStartPoint(newHeadPoint, snakeSize);
-      var lastClearPoint = calculateDirection(tail, snakeObject[0]).animationStartPoint(tail);
-      var lastOldHeadRectPoint = 
-      
+      var newHeadPoint = direction.animationStartPoint(newHead, snakeSize);
+
       var run = true;
-      
-      function clearTail() {        
-        var tailDirection = calculateDirection(tail, snakeObject[0]);
-        
-        if (!tailDirection) return;
-        
+
+      function clearTail() {
+        if (!clearPoint) return;
+
         var clearParams = tailDirection.calculateNewRectParams(snakeSize, stepSize);
-        
+
         ctx.clearRect(
           clearPoint.x,
           clearPoint.y,
@@ -346,10 +335,8 @@
         doEdgeJumpIfReached(clearPoint);
       }
       
-      function redrawLastHead() {        
-        var oldHeadDirection = calculateDirection(headPrevious, head);
-
-        if (!oldHeadDirection) return;
+      function redrawLastHead(lastOldHeadRectPoint) {
+        if (!lastOldHeadRectPoint) return;
 
         var oldHeadRectParams = oldHeadDirection.calculateNewRectParams(snakeSize, stepSize);
 
@@ -366,7 +353,7 @@
         doEdgeJumpIfReached(headPoint);
       }
 
-      function drawNewHead() {
+      function drawNewHead(lastRectPoint) {
         var rectParams = direction.calculateNewRectParams(snakeSize, stepSize);
 
         ctx.fillStyle = 'red';
