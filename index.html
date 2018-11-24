@@ -309,11 +309,11 @@
       var counter = 0;
 
       var tailDirection = calculateDirection(tail, snakeObject[0]);
-      var clearPoint = tailDirection ? tailDirection.animationStartPoint(tail, snakeSize) : null;
+      var clearPoint = tailDirection ? tailDirection.animationStartPoint(tail, snakeSize, stepSize) : null;
 
-      var headPoint = direction.animationStartPoint(head, snakeSize);
+      var headPoint = direction.animationStartPoint(head, snakeSize, stepSize);
       
-      var newHeadPoint = direction.animationStartPoint(newHead, snakeSize);
+      var newHeadPoint = direction.animationStartPoint(newHead, snakeSize, stepSize);
 
       var run = true;
 

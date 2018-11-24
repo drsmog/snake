@@ -61,9 +61,9 @@ var directions = {
         ySize: snakeSize
       };
     },
-    animationStartPoint(rect, snakeSize) {
+    animationStartPoint(rect, snakeSize, stepSize) {
       return {
-        x: rect.x + snakeSize,
+        x: rect.x + snakeSize - stepSize,
         y: rect.y
       };
     }
@@ -84,10 +84,10 @@ var directions = {
         ySize: stepSize
       };
     },
-    animationStartPoint(rect, snakeSize) {
+    animationStartPoint(rect, snakeSize, stepSize) {
       return {
         x: rect.x,
-        y: rect.y + snakeSize
+        y: rect.y + snakeSize - stepSize
       };
     }
   }
