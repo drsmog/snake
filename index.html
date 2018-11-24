@@ -311,8 +311,7 @@
       var tailDirection = calculateDirection(tail, snakeObject[0]);
       var clearPoint = tailDirection ? tailDirection.animationStartPoint(tail, snakeSize) : null;
 
-      var oldHeadDirection = calculateDirection(headPrevious, head);
-      var headPoint = oldHeadDirection ? oldHeadDirection.animationStartPoint(head, snakeSize) : null;
+      var headPoint = direction.animationStartPoint(head, snakeSize);
       
       var newHeadPoint = direction.animationStartPoint(newHead, snakeSize);
 
