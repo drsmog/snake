@@ -369,7 +369,7 @@
         doEdgeJumpIfReached(newHeadPoint);
       }
       
-      function move() {
+      var interval = setInterval(function move() {
         counter++;
         
         clearTail();
@@ -377,18 +377,18 @@
         drawNewHead();
         
         if (counter === 5) {
-          // clearInterval(interval);
-          run = false;
+          clearInterval(interval);
+          // run = false;
         
           synchronizer.finishSession();
           
           return;
         }
-      }
+      }, 15);
       
-      while (run) {
-        move();
-      }
+      // while (run) {
+      //   move();
+      // }
       
       // var interval = setInterval(function() {
       //   counter++;
@@ -451,7 +451,7 @@
         newHead.y === newSnake[newSnake.length - 1].y;
     }
 
-    setInterval(gameLoop, 1000);
+    setInterval(gameLoop, 100);
     setInterval(generateFood, 5000);
     //alert('xeii');
   </script>
