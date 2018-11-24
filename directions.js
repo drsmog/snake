@@ -7,13 +7,16 @@ var directions = {
         y: head.y
       };
     },
-    calculateRectParams: function(snakeSize, stepSize) {
+    calculateNewRectParams: function(rect, snakeSize, stepSize) {
       return {
-        xChange: 0 + stepSize,
-        yChange: 0,
+        newX: rect.x + stepSize,
+        newY: rect.y,
         xSize: stepSize,
         ySize: snakeSize
       };
+    },
+    animationStartPoint(rect) {
+      return rect;
     }
   },
   DOWN: {
@@ -24,13 +27,16 @@ var directions = {
         y: head.y + snakeSize
       };
     },
-    calculateRectParams: function(snakeSize, stepSize) {
+    calculateNewRectParams: function(rect, snakeSize, stepSize) {
       return {
-        xChange: 0,
-        yChange: 0 + stepSize,
+        newX: rect.x,
+        newY: rect.y + stepSize,
         xSize: snakeSize,
         ySize: stepSize
       };
+    },
+    animationStartPoint(rect) {
+      return rect;
     }
   },
   LEFT: {
@@ -41,12 +47,18 @@ var directions = {
         y: head.y
       };
     },
-    calculateRectParams: function(snakeSize, stepSize) {
+    calculateNewRectParams: function(rect, snakeSize, stepSize) {
       return {
-        xChange: 0 - stepSize,
-        yChange: 0,
+        newX: rect.x + snakeSize - stepSize,
+        newY: rect.y,
         xSize: stepSize,
         ySize: snakeSize
+      };
+    },
+    animationStartPoint(rect, snakeSize) {
+      return {
+        x: rect.x + snakeSize,
+        y: rect.y
       };
     }
   },
@@ -58,12 +70,18 @@ var directions = {
         y: head.y - snakeSize
       };
     },
-    calculateRectParams: function(snakeSize, stepSize) {
+    calculateNewRectParams: function(rect, snakeSize, stepSize) {
       return {
-        xChange: 0,
-        yChange: 0 - stepSize,
+        newX: rect.x,
+        newY: rect.y + snakeSize - stepSize,
         xSize: snakeSize,
         ySize: stepSize
+      };
+    },
+    animationStartPoint(rect, snakeSize) {
+      return {
+        x: rect.x,
+        y: rect.y + snakeSize
       };
     }
   }
@@ -99,8 +117,10 @@ function chooseDirection(keyCode) {
 
 // FIXME: მარტო ზემოთ და მარცხნივ წასვლაზე აქვს შეცდომები და შემობრუნებზე კიდე. ამ ფუნქციის ბაგი იქნება.
 function calculateDirection(startPoint, nextPoint) {
-  if (startPoint.y === nextPoint.y)
-    return startPoint.x < nextPoint.x ? directions.RIGHT : directions.LEFT;
+  if (startPoint.y === nextPoint.y && startPoint.x === nextPoint.x) return null;
 
-  return startPoint.y < nextPoint.y ? directions.DOWN : directions.UP;
+  if (startPoint.y === nextPoint.y)
+    return startPoint.x <= nextPoint.x ? directions.RIGHT : directions.LEFT;
+
+  return startPoint.y <= nextPoint.y ? directions.DOWN : directions.UP;
 }

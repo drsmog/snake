@@ -23,6 +23,9 @@
     </canvas>
 
   <script>
+    var CANVAS_WIDTH = 800;
+    var CANVAS_HEIGHT = 600;
+  
     var snake = [
       {
         x: 0,
@@ -160,6 +163,21 @@
       if (chosen) direction = chosen;
     });
 
+    function doEdgeJumpIfReached(head) {
+      if (head.x >= CANVAS_WIDTH) {
+        head.x = head.x - CANVAS_WIDTH;
+      }
+      if (head.y >= CANVAS_HEIGHT) {
+        head.y = head.y - CANVAS_HEIGHT;
+      }
+      if (head.x < 0) {
+        head.x = head.x + CANVAS_WIDTH;
+      }
+      if (head.y < 0) {
+        head.y = head.y + CANVAS_HEIGHT;
+      }
+    }
+
     //game loop
     function gameLoop() {
       synchronizer.execute(function() {
@@ -167,27 +185,16 @@
         var head = snake[snake.length - 1];
         var newHead = direction.placeNewHead(head, snakeSize);
 
-        if (newHead.x >= 800) {
-          newHead.x = newHead.x - 800;
-        }
-        if (newHead.y >= 600) {
-          newHead.y = newHead.y - 600;
-        }
-        if (newHead.x < 0) {
-          newHead.x = newHead.x + 800;
-        }
-        if (newHead.y < 0) {
-          newHead.y = newHead.y + 600;
-        }
+        doEdgeJumpIfReached(newHead);
 
         animatedMove(snake, newHead, direction, snakeColor, synchronizer);
 
-        socket.emit('SNAKE_MOVE', {
-          gamer: gamer,
-          snake: JSON.stringify(snake),
-          snakeColor: snakeColor,
-          direction: direction.text
-        });
+        // socket.emit('SNAKE_MOVE', {
+        //   gamer: gamer,
+        //   snake: JSON.stringify(snake),
+        //   snakeColor: snakeColor,
+        //   direction: direction.text
+        // });
 
         eatify(newHead);
 
@@ -286,18 +293,18 @@
       snakeColor = '#' + Math.random().toString(16).substr(-6);
     };
 
-    function animatedMove(snake, newHead, direction, color, synchronizer) {
+    function animatedMove(snakeObject, newHead, direction, color, synchronizer) {
       synchronizer.startNewSession();
 
-      var tail = snake[0];
-      var headPrevious = snake[snake.length - 2];
-      var head = snake[snake.length - 1];
+      var tail = snakeObject[0];
+      var headPrevious = snakeObject[snakeObject.length - 2];
+      var head = snakeObject[snakeObject.length - 1];
       var stepSize = snakeSize / 5;
 
-      // drawSnake(ctx, snake, color, 1, snake.length - 1);
+      drawSnake(ctx, snake, color, 1, snake.length - 1);
 
-      snake.splice(0, 1);
-      snake.push(newHead);
+      snakeObject.splice(0, 1);
+      snakeObject.push(newHead);
 
       var counter = 0;
 
@@ -314,18 +321,19 @@
         y: newHead.y
       };
       
-      var run = true;
-      var xsSum = 0;
+      var lastRectPoint = direction.animationStartPoint(newHeadPoint, snakeSize);
+      var lastClearPoint = calculateDirection(tail, snakeObject[0]).animationStartPoint(tail);
+      var lastOldHeadRectPoint = 
       
-      function move() {
-        counter++;
-
-        var rectParams = direction.calculateRectParams(snakeSize, stepSize);
-        var tailDirection = calculateDirection(tail, snake[0], direction);
-        var clearParams = tailDirection.calculateRectParams(snakeSize, stepSize);
-        var oldHeadDirection = calculateDirection(headPrevious, head, direction);
-        var oldHeadRectParams = oldHeadDirection.calculateRectParams(snakeSize, stepSize);
-
+      var run = true;
+      
+      function clearTail() {        
+        var tailDirection = calculateDirection(tail, snakeObject[0]);
+        
+        if (!tailDirection) return;
+        
+        var clearParams = tailDirection.calculateNewRectParams(snakeSize, stepSize);
+        
         ctx.clearRect(
           clearPoint.x,
           clearPoint.y,
@@ -335,8 +343,15 @@
 
         clearPoint.x += clearParams.xChange;
         clearPoint.y += clearParams.yChange;
+        doEdgeJumpIfReached(clearPoint);
+      }
+      
+      function redrawLastHead() {        
+        var oldHeadDirection = calculateDirection(headPrevious, head);
 
-        xsSum += rectParams.xSize;
+        if (!oldHeadDirection) return;
+
+        var oldHeadRectParams = oldHeadDirection.calculateNewRectParams(snakeSize, stepSize);
 
         ctx.fillStyle = color;
         ctx.fillRect(
@@ -345,9 +360,14 @@
           oldHeadRectParams.xSize,
           oldHeadRectParams.ySize
         );
-
+        
         headPoint.x += oldHeadRectParams.xChange;
         headPoint.y += oldHeadRectParams.yChange;
+        doEdgeJumpIfReached(headPoint);
+      }
+
+      function drawNewHead() {
+        var rectParams = direction.calculateNewRectParams(snakeSize, stepSize);
 
         ctx.fillStyle = 'red';
         ctx.fillRect(
@@ -359,11 +379,17 @@
 
         newHeadPoint.x += rectParams.xChange;
         newHeadPoint.y += rectParams.yChange;
-
-        if (counter === 5) {
-          ctx.clearRect(tail.x, tail.y, snakeSize, snakeSize);
-          drawSnake(ctx, snake, color, 1, snake.length - 1);
+        doEdgeJumpIfReached(newHeadPoint);
+      }
+      
+      function move() {
+        counter++;
         
+        clearTail();
+        redrawLastHead();
+        drawNewHead();
+        
+        if (counter === 5) {
           // clearInterval(interval);
           run = false;
         
@@ -383,7 +409,7 @@
       // 
       //   if (counter === 5) {
       //     ctx.clearRect(tail.x, tail.y, snakeSize, snakeSize);
-      //     drawSnake(ctx, snake, color, 1, snake.length - 1);
+      //     drawSnake(ctx, snakeObject, color, 1, snakeObject.length - 1);
       // 
       //     clearInterval(interval);
       // 
@@ -392,9 +418,9 @@
       //     return;
       //   }
       // 
-      //   var rectParams = direction.calculateRectParams(snakeSize, stepSize);
-      //   var tailDirection = calculateDirection(tail, snake[0], direction);
-      //   var clearParams = tailDirection.calculateRectParams(snakeSize, stepSize);
+      //   var rectParams = direction.calculateNewRectParams(snakeSize, stepSize);
+      //   var tailDirection = calculateDirection(tail, snakeObject[0], direction);
+      //   var clearParams = tailDirection.calculateNewRectParams(snakeSize, stepSize);
       // 
       //   clearPoint.x += clearParams.xChange;
       //   clearPoint.y += clearParams.yChange;
