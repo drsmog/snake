@@ -338,7 +338,7 @@
       function redrawLastHead() {
         if (!headPoint) return;
 
-        var oldHeadRectParams = oldHeadDirection.calculateNewRectParams(snakeSize, stepSize);
+        var oldHeadRectParams = direction.calculateNewRectParams(snakeSize, stepSize);
 
         ctx.fillStyle = color;
         ctx.fillRect(
@@ -389,59 +389,7 @@
       // while (run) {
       //   move();
       // }
-      
-      // var interval = setInterval(function() {
-      //   counter++;
-      //   console.log(counter);
-      // 
-      //   if (counter === 5) {
-      //     ctx.clearRect(tail.x, tail.y, snakeSize, snakeSize);
-      //     drawSnake(ctx, snakeObject, color, 1, snakeObject.length - 1);
-      // 
-      //     clearInterval(interval);
-      // 
-      //     synchronizer.finishSession();
-      // 
-      //     return;
-      //   }
-      // 
-      //   var rectParams = direction.calculateNewRectParams(snakeSize, stepSize);
-      //   var tailDirection = calculateDirection(tail, snakeObject[0], direction);
-      //   var clearParams = tailDirection.calculateNewRectParams(snakeSize, stepSize);
-      // 
-      //   clearPoint.x += clearParams.xChange;
-      //   clearPoint.y += clearParams.yChange;
-      // 
-      //   ctx.clearRect(
-      //     clearPoint.x,
-      //     clearPoint.y,
-      //     clearParams.xSize,
-      //     clearParams.ySize
-      //   );
-      // 
-      //   headPoint.x += rectParams.xChange;
-      //   headPoint.y += rectParams.yChange;
-      // 
-      //   ctx.fillStyle = color;
-      //   ctx.fillRect(
-      //     headPoint.x,
-      //     headPoint.y,
-      //     rectParams.xSize,
-      //     rectParams.ySize
-      //   );
-      // 
-      //   newHeadPoint.x += rectParams.xChange;
-      //   newHeadPoint.y += rectParams.yChange;
-      // 
-      //   ctx.fillStyle = 'red';
-      //   ctx.fillRect(
-      //     newHeadPoint.x,
-      //     newHeadPoint.y,
-      //     rectParams.xSize,
-      //     rectParams.ySize
-      //   );
-      // 
-      // }, 150);
+
     }
 
     function wasNormalMove(oldSnake, newSnake, direction) {
