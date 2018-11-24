@@ -189,12 +189,12 @@
 
         animatedMove(snake, newHead, direction, snakeColor, synchronizer);
 
-        // socket.emit('SNAKE_MOVE', {
-        //   gamer: gamer,
-        //   snake: JSON.stringify(snake),
-        //   snakeColor: snakeColor,
-        //   direction: direction.text
-        // });
+        socket.emit('SNAKE_MOVE', {
+          gamer: gamer,
+          snake: JSON.stringify(snake),
+          snakeColor: snakeColor,
+          direction: direction.text
+        });
 
         eatify(newHead);
 
