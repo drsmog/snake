@@ -6,6 +6,20 @@ var directions = {
         x: head.x + snakeSize,
         y: head.y
       };
+    },
+    calculateNewRectParams: function(snakeSize, stepSize) {
+      return {
+        xChange: 0 + stepSize,
+        yChange: 0,
+        xSize: stepSize,
+        ySize: snakeSize
+      };
+    },
+    animationStartPoint(rect) {
+      return {
+        x: rect.x,
+        y: rect.y
+      };
     }
   },
   DOWN: {
@@ -14,6 +28,20 @@ var directions = {
       return {
         x: head.x,
         y: head.y + snakeSize
+      };
+    },
+    calculateNewRectParams: function(snakeSize, stepSize) {
+      return {
+        xChange: 0,
+        yChange: 0 + stepSize,
+        xSize: snakeSize,
+        ySize: stepSize
+      };
+    },
+    animationStartPoint(rect) {
+      return {
+        x: rect.x,
+        y: rect.y
       };
     }
   },
@@ -24,6 +52,20 @@ var directions = {
         x: head.x - snakeSize,
         y: head.y
       };
+    },
+    calculateNewRectParams: function(snakeSize, stepSize) {
+      return {
+        xChange: 0 - stepSize,
+        yChange: 0,
+        xSize: stepSize,
+        ySize: snakeSize
+      };
+    },
+    animationStartPoint(rect, snakeSize, stepSize) {
+      return {
+        x: rect.x + snakeSize - stepSize,
+        y: rect.y
+      };
     }
   },
   UP: {
@@ -33,8 +75,29 @@ var directions = {
         x: head.x,
         y: head.y - snakeSize
       };
+    },
+    calculateNewRectParams: function(snakeSize, stepSize) {
+      return {
+        xChange: 0,
+        yChange: 0 - stepSize,
+        xSize: snakeSize,
+        ySize: stepSize
+      };
+    },
+    animationStartPoint(rect, snakeSize, stepSize) {
+      return {
+        x: rect.x,
+        y: rect.y + snakeSize - stepSize
+      };
     }
   }
+};
+
+var directionsDict = {
+  'right': directions.RIGHT,
+  'down': directions.DOWN,
+  'left': directions.LEFT,
+  'up': directions.UP
 };
 
 Object.freeze(directions);
@@ -56,4 +119,14 @@ function chooseDirection(keyCode) {
   }
 
   return null;
+}
+
+// FIXME: მარტო ზემოთ და მარცხნივ წასვლაზე აქვს შეცდომები და შემობრუნებზე კიდე. ამ ფუნქციის ბაგი იქნება.
+function calculateDirection(startPoint, nextPoint) {
+  if (startPoint.y === nextPoint.y && startPoint.x === nextPoint.x) return null;
+
+  if (startPoint.y === nextPoint.y)
+    return startPoint.x <= nextPoint.x ? directions.RIGHT : directions.LEFT;
+
+  return startPoint.y <= nextPoint.y ? directions.DOWN : directions.UP;
 }
