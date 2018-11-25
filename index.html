@@ -301,7 +301,7 @@
       var head = snakeObject[snakeObject.length - 1];
       var stepSize = snakeSize / 5;
 
-      drawSnake(ctx, snake, color, 1, snake.length - 1);
+      drawSnake(ctx, snakeObject, color, 1, snakeObject.length - 1);
 
       snakeObject.splice(0, 1);
       snakeObject.push(newHead);
